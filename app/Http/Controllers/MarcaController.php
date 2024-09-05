@@ -12,23 +12,33 @@ use Illuminate\Support\Facades\Storage;
 class MarcaController extends Controller
 {
     protected $marca;
-    protected $marcaRepository;
 
-    public function __construct(Marca $marca, MarcaRepository $marcaRepository)
+    public function __construct(Marca $marca)
     {
         $this->marca = $marca;
-        $this->marcaRepository = $marcaRepository;
     }
 
     public function index(Request $request)
     {
-        $atributosModelos = $request->input('atributos_modelos');
-        $filtro = $request->input('filtro');
-        $atributos = $request->input('atributos');
 
-        $marcas = $this->marcaRepository->getAll($atributosModelos, $filtro, $atributos);
+        $marcaRepository = new MarcaRepository($this->marca);
 
-        return response()->json($marcas, 200);
+        if($request->has('atributos_modelos')) {
+            $atributos_modelos = 'modelos:id,'.$request->atributos_modelos;
+            $marcaRepository->selectAtributosRegistrosRelacionados($atributos_modelos);
+        } else {
+            $marcaRepository->selectAtributosRegistrosRelacionados('modelos');
+        }
+
+        if($request->has('filtro')) {
+            $marcaRepository->filtro($request->filtro);
+        }
+
+        if($request->has('atributos')) {
+            $marcaRepository->selectAtributos($request->atributos);
+        }
+
+        return response()->json($marcaRepository->getResultado(), 200);
     }
 
 

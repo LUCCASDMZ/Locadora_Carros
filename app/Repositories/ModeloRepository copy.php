@@ -2,23 +2,23 @@
 
 namespace App\Repositories;
 
-use App\Models\Marca;
+use App\Models\Modelo;
 
-class MarcaRepository
+class ModeloRepository
 {
-    protected $marca;
+    protected $modelo;
 
-    public function __construct(Marca $marca)
+    public function __construct(Modelo $modelo)
     {
-        $this->marca = $marca;
+        $this->modelo = $modelo;
     }
 
-    public function getAll($atributosModelos = null, $filtro = null, $atributos = null)
+    public function getAll($atributosMarcas = null, $filtro = null, $atributos = null)
     {
-        $query = $this->marca->with('modelos');
+        $query = $this->modelo->with('marca');
 
-        if ($atributosModelos) {
-            $query->with('modelos:id,' . $atributosModelos);
+        if ($atributosMarcas) {
+            $query->with('marca:id,' . $atributosMarcas);
         }
 
         if ($filtro) {
