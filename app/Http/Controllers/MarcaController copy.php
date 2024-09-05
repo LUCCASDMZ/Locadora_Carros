@@ -12,23 +12,64 @@ use Illuminate\Support\Facades\Storage;
 class MarcaController extends Controller
 {
     protected $marca;
-    protected $marcaRepository;
 
-    public function __construct(Marca $marca, MarcaRepository $marcaRepository)
+    public function __construct(Marca $marca)
     {
         $this->marca = $marca;
-        $this->marcaRepository = $marcaRepository;
     }
 
     public function index(Request $request)
     {
-        $atributosModelos = $request->input('atributos_modelos');
-        $filtro = $request->input('filtro');
-        $atributos = $request->input('atributos');
 
-        $marcas = $this->marcaRepository->getAll($atributosModelos, $filtro, $atributos);
 
-        return response()->json($marcas, 200);
+        $marcaRepository = new MarcaRepository($this->marca);
+
+        if ($request->has('atributos_modelos')) {
+            $atributosModelos = 'modelos:id,'.$request->atributos_modelos;
+            $marcaRepository->selectAtributosRegistroRelacioandos($atributosModelos);
+        } else {
+            $marcaRepository->selectAtributosRegistroRelacioandos('modelos');
+        }
+
+        if ($request->has('filtro')) {
+            $marcaRepository->filtro($request->filtro);
+            $filtros = explode(';', $request->filtro);
+            foreach ($filtros as $filtro) {
+                list($campo, $operador, $valor) = explode(':', $filtro);
+                $query->where($campo, $operador, $valor);
+            }
+        }
+
+
+
+        //---------------------------
+
+        $query = $this->marca->with('modelos');
+
+        // Filtra atributos da marca
+        if ($request->has('atributos_modelos')) {
+            $atributosModelos = $request->input('atributos_modelos');
+            $query->with('modelos:id,' . $atributosModelos);
+        }
+
+        // Aplica filtros
+        if ($request->has('filtro')) {
+            $filtros = explode(';', $request->input('filtro'));
+            foreach ($filtros as $filtro) {
+                list($campo, $operador, $valor) = explode(':', $filtro);
+                $query->where($campo, $operador, $valor);
+            }
+        }
+
+        // Seleciona atributos específicos
+        if ($request->has('atributos')) {
+            $atributos = $request->input('atributos');
+            $query->selectRaw($atributos);
+        }
+
+        $marca = $query->get();
+
+        return response()->json($marca, 200);
     }
 
 

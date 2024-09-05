@@ -5,32 +5,48 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreModeloRequest;
 use App\Http\Requests\UpdateModeloRequest;
 use App\Models\Modelo;
-use App\Repositories\ModeloRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ModeloController extends Controller
 {
     protected $modelo;
-    protected $modeloRepository;
-
-    public function __construct(Modelo $modelo, ModeloRepository $modeloRepository)
+    public function __construct(Modelo $modelo)
     {
         $this->modelo = $modelo;
-        $this->modeloRepository = $modeloRepository;
     }
 
 
     public function index(Request $request)
     {
-        $atributosMarcas = $request->input('atributos_marca');
-        $filtro = $request->input('filtro');
-        $atributos = $request->input('atributos');
+        $query = $this->modelo->with('marca');
 
-        $modelo = $this->modeloRepository->getAll($atributosMarcas, $filtro, $atributos);
+        // Filtra atributos da marca
+        if ($request->has('atributos_marca')) {
+            $atributosMarca = $request->input('atributos_marca');
+            $query->with('marca:id,' . $atributosMarca);
+        }
 
-        return response()->json($modelo, 200);
+        // Aplica filtros
+        if ($request->has('filtro')) {
+            $filtros = explode(';', $request->input('filtro'));
+            foreach ($filtros as $filtro) {
+                list($campo, $operador, $valor) = explode(':', $filtro);
+                $query->where($campo, $operador, $valor);
+            }
+        }
+
+        // Seleciona atributos específicos
+        if ($request->has('atributos')) {
+            $atributos = $request->input('atributos');
+            $query->selectRaw($atributos);
+        }
+
+        $modelos = $query->get();
+
+        return response()->json($modelos, 200);
     }
+
 
 
     public function store(StoreModeloRequest $request)
