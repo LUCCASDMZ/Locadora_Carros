@@ -16,4 +16,12 @@ class Modelo extends Model
         //Um modelo pertence a uma marca
         return $this->belongsTo(Marca::class);
     }
+
+
+    //Nao e necessario, mas coloquei pra que se caso eu quiser recuperar algo de carros no modelo
+    public function carros()
+    {
+        //Um modelo possui a varios carros
+        return $this->hasMany(Carro::class);
+    }
 }

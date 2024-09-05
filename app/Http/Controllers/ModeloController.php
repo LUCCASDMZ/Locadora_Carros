@@ -19,7 +19,6 @@ class ModeloController extends Controller
 
     }
 
-
     public function index(Request $request)
     {
         $modeloRepository = new ModeloRepository($this->modelo);

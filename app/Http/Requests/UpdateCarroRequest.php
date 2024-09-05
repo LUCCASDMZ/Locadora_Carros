@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateCarroRequest extends FormRequest
 {
@@ -11,18 +12,37 @@ class UpdateCarroRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            //
+            'modelo_id' => 'exists:modelos,id',
+
+            'placa' => [
+                'sometimes',
+            ],
+
+            'disponivel' => [
+                'sometimes',
+                'boolean',
+            ],
+
+            'km' => [
+                'sometimes',
+            ],
+        ];
+    }
+
+    public function messages()
+    {
+        return[
+            'modelo_id.exists' => 'Esse modelo nao existe',
         ];
     }
 }
+
