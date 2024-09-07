@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClienteController;
@@ -24,3 +25,8 @@ Route::apiResource('marca', MarcaController::class);
 
 Route::apiResource('modelo', ModeloController::class);
 //Route::match(['put', 'patch'], 'modelos/{id}', [ModeloController::class, 'update']);
+
+Route::post('login', [AuthController::class, 'login']);
+Route::post('logout', [AuthController::class, 'logout']);
+Route::post('refresh', [AuthController::class, 'refresh']);
+Route::post('me', [AuthController::class, 'me']);
