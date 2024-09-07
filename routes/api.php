@@ -24,4 +24,3 @@ Route::apiResource('marca', MarcaController::class);
 
 Route::apiResource('modelo', ModeloController::class);
 //Route::match(['put', 'patch'], 'modelos/{id}', [ModeloController::class, 'update']);
-
