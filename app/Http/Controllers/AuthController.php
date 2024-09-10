@@ -18,13 +18,11 @@ class AuthController extends Controller
         $token = JWTAuth::attempt($credenciais);
 
         if($token){
-            return response()->json(['Token'=>$token]);
+            return response()->json(['token'=>$token]);
 
         } else {
             return response()->json(['error'=>'Usuario ou senha invalido'], 403);
         }
-
-        //Retornar um JTW
     }
 
     public function logout()
