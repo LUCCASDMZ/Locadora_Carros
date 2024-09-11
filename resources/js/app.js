@@ -27,6 +27,9 @@ app.component('register-component', registerComponent);
 import homeComponent from './components/home.vue';
 app.component('home-component', homeComponent);
 
+import marcasComponent from './components/marcas.vue';
+app.component('marcas-component', marcasComponent);
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
