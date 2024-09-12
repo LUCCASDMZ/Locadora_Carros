@@ -7,7 +7,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>Locadora</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -20,8 +20,8 @@
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    {{ config('app.name', 'Laravel') }}
+                <a class="navbar-brand" href="{{ route('home') }}">
+                    Locadora de carros
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
@@ -31,6 +31,11 @@
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
                         @auth
+
+                            <li class="nav-item" >
+                                <a class="nav-link" href="{{ route('home') }}">Home</a>
+                            </li>
+                        
                             <li class="nav-item" >
                                 <a class="nav-link" href="#">Clientes</a>
                             </li>
@@ -45,7 +50,7 @@
                                     <a class="dropdown-item" href="#">Carros</a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="{{ route('marcas') }}">Marcas</a>
-                                    <a class="dropdown-item" href="#">Modelos</a>
+                                    <a class="dropdown-item" href="{{ route('modelos') }}">Modelos</a>
                                 </div>
                             </li>           
                         @endauth
@@ -89,6 +94,15 @@
                 </div>
             </div>
         </nav>
+
+        @auth
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ Route::currentRouteName() }}</li>
+                </ol>
+            </nav>
+        @endauth
 
         <main class="py-4">
             @yield('content')

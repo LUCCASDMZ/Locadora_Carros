@@ -18,7 +18,7 @@ const app = createApp({});
 import ExampleComponent from './components/ExampleComponent.vue';
 app.component('example-component', ExampleComponent);
 
-import loginComponent from './components/Login.vue';
+import loginComponent from './components/login.vue';
 app.component('login-component', loginComponent);
 
 import registerComponent from './components/Register.vue';
@@ -27,8 +27,20 @@ app.component('register-component', registerComponent);
 import homeComponent from './components/home.vue';
 app.component('home-component', homeComponent);
 
-import marcasComponent from './components/marcas.vue';
+import marcasComponent from './components/Marcas.vue';
 app.component('marcas-component', marcasComponent);
+
+import modelosComponent from './components/Modelos.vue';
+app.component('modelos-component', modelosComponent);
+
+import inputcontainerComponent from './components/InputContainer.vue';
+app.component('inputcontainer-component', inputcontainerComponent);
+
+import tableComponent from './components/Table.vue';
+app.component('table-component', tableComponent);
+
+import cardComponent from './components/Card.vue';
+app.component('card-component', cardComponent);
 
 /**
  * The following block of code may be used to automatically register your
