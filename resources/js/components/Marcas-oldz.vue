@@ -26,20 +26,12 @@
                 <card titulo="Relações de Marcas">
                     <Table></Table>
                     <div class="d-flex">
-                        <button type="button" class="btn btn-primary btn-sm ms-auto" @click="openModal">Adicionar</button>
+                        <button type="button" class="btn btn-primary btn-sm ms-auto" data-bs-toggle="modal" data-bs-target="#modalMarca">Adicionar</button>
                     </div>
                 </card>
 
-                <Modal 
-                    v-model:show="showModal" 
-                    id="modalMarca" 
-                    titulo="Adicionar marca"
-                >
-                    <template #alertas>
-                        <Alert tipo="success"></Alert>
-                        <Alert tipo="danger"></Alert>
-                    </template>
-                    <template #conteudo>
+                <Modal id="modalMarca" titulo="Adicionar marca">
+                    <template v-slot:conteudo>
                         <div class="form-group mb-4">
                             
                             <input-container-component titulo="Nome da marca" id="novoNome" id-help="novoNomeHelp" texto-ajuda="Opcional. Informe o nome da marca">
@@ -54,11 +46,12 @@
                         </div>
                     </template>
 
-                    <template #rodape>
-                        <button type="button" class="btn btn-secondary" @click="closeModal">Fechar</button>
+                    <template v-slot:rodape>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
                         <button @click="submitFile" type="button" class="btn btn-primary">Salvar</button>
                     </template>
                 </Modal>
+                
                 
             </div>
         </div>
@@ -70,22 +63,10 @@
     import Table from './Table.vue';
     import Card from './Card.vue';
     import Modal from './Modal.vue'
-    import Alert from './Alert.vue';
     import { ref } from 'vue';
     
     const nomeMarca = ref('');
     const file = ref(null);
-    const showModal = ref(false);
-
-    const openModal = () => {
-        showModal.value = true;
-    };
-
-    const closeModal = () => {
-        showModal.value = false;
-        nomeMarca.value = '';
-        file.value = null;
-    };
 
     const fileUpload = (event) => {
         file.value = event.target.files[0];
@@ -103,18 +84,20 @@
         try{
             const response =  await axios.post('http://127.0.0.1:8000/api/marca',formData, {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Accept': 'application/json'
+                    'Content-Type': 'multipart/form-data'
                 }
             })
-            closeModal();
-            // Aqui você pode adicionar lógica adicional, como atualizar a lista de marcas
+            nomeMarca.value = ''
+            file.value = null
         } catch (error){
-            console.error('Erro ao adicionar a marca:', error.response?.data || error.message);
+            console.error('Erro ao adicionar a marca:', error)
         }
+
     }
+    
+    
     </script>
     
-    <style scoped>
+    <style lang="scss" scoped>
     
     </style>

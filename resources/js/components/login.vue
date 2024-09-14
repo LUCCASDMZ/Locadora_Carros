@@ -68,7 +68,7 @@ const login = async (e) => {
     });
 
     if (response.data.token) {
-    document.cookie = `token=${response.data.Token}; path=/; max-age=86400; SameSite=Lax; Secure`;
+    document.cookie = `token=${response.data.token}; path=/; max-age=86400; SameSite=Lax; Secure`;
     }
 
   } catch (error) {
