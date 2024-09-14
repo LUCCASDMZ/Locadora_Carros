@@ -4,6 +4,7 @@
             <div class="col-md-8">
 
                 <Card titulo="Busca de Marcas">
+<!-- --------------------------------------------------BUSCAR MARCAS-------------------------------------------------- -->                    
                         <div class="row g-3"> 
                             <div class="col mb-3">
                                 <input-container-component titulo="ID" id="inputId" id-help="idHelp" texto-ajuda="Opcional. Informe o ID da marca"> 
@@ -23,33 +24,64 @@
                         </div>
                 </Card>
 
+<!-- --------------------------------------------------MARCAS-------------------------------------------------- -->
+
+ <!-- --------------------ALERTS--------------------> 
+                <Alert 
+                    v-if="alertaMensagemPrincipal"
+                    :tipo="alertaTipoPrincipal"
+                    :mensagem="alertaMensagemPrincipal"
+                    :duracao="5000"
+                />
+<!-- --------------------FIM----------------------->                
+
                 <card titulo="Relações de Marcas">
-                    <Table></Table>
+                    <Table :colunas="colunas" :itens="listaMarcas">
+                        <template #imagem="{ item }">
+                            <img v-if="item.imagem" :src="'storage/'+item.imagem" alt="Imagem da marca" style="max-width: 50px; max-height: 50px;">
+                            <span v-else>Sem imagem</span>
+                        </template>
+                        <template #acoes="{ item }">
+                            <button class="btn btn-danger" @click="excluirMarca(item.id)">Excluir</button>
+                        </template>
+                    </Table>
+
                     <div class="d-flex">
                         <button type="button" class="btn btn-primary btn-sm ms-auto" @click="openModal">Adicionar</button>
                     </div>
                 </card>
+                
 
+<!-- -------------------------------------------------- MODAL MARCAS-------------------------------------------------- -->                    
                 <Modal 
                     v-model:show="showModal" 
                     id="modalMarca" 
                     titulo="Adicionar marca"
+                    @excluirMarca="excluirMarca"
                 >
+<!-- --------------------ALERTS-------------------->                
                     <template #alertas>
-                        <Alert tipo="success"></Alert>
-                        <Alert tipo="danger"></Alert>
+                        <Alert 
+                            v-if="alertaMensagem"
+                            :tipo="alertaTipo"
+                            :mensagem="alertaMensagem"
+                            :duracao="5000"
+                        />
                     </template>
+<!-- --------------------FIM----------------------->
+
+<!-- --------------------INPUT MARCAS-------------------->
                     <template #conteudo>
                         <div class="form-group mb-4">
                             
-                            <input-container-component titulo="Nome da marca" id="novoNome" id-help="novoNomeHelp" texto-ajuda="Opcional. Informe o nome da marca">
+                            <input-container-component titulo="Nome da marca" id="novoNome" id-help="novoNomeHelp" texto-ajuda="Informe o nome da marca">
                                 <input v-model="nomeMarca" type="text" class="form-control" id="novoNome" aria-describedby="novoNomeHelp" placeholder="Nome da marca">
                             </input-container-component>
                         </div>
 
                         <div class="form-group mb-4">
-                            <input-container-component titulo="Imagem" id="novoImagem" id-help="novoImagemHelp" texto-ajuda="Opcional. Selecione a Imagem da marca">
-                                <input @change="fileUpload" type="file" class="form-control" id="novoImagem" aria-describedby="novoImagemHelp" placeholder="Imagem da marca">
+                            <input-container-component titulo="Imagem" id="novoImagem" id-help="novoImagemHelp" texto-ajuda="Selecione a Imagem da marca">
+                                <input @change="fileUpload" type="file" class="form-control" id="novoImagem" aria-describedby="novoImagemHelp" accept="image/png">
                             </input-container-component>
                         </div>
                     </template>
@@ -59,62 +91,133 @@
                         <button @click="submitFile" type="button" class="btn btn-primary">Salvar</button>
                     </template>
                 </Modal>
-                
+<!-- --------------------------------------------------FIM-------------------------------------------------- -->                
             </div>
         </div>
     </div>
-    </template>
+</template>
+
+<script setup>
+import InputContainerComponent from './InputContainer.vue';
+import Table from './Table.vue';
+import Card from './Card.vue';
+import Modal from './Modal.vue'
+import Alert from './Alert.vue';
+import { onMounted, ref } from 'vue';
+
+
+const listaMarcas = ref([]);
+const nomeMarca = ref('');
+const file = ref(null);
+const showModal = ref(false);
+const alertaTipo = ref('');
+const alertaMensagem = ref('');
+
+const alertaTipoPrincipal = ref('');
+const alertaMensagemPrincipal = ref('');
+
+//  --------------------------------------------------MODAL--------------------------------------------------
+const openModal = () => {
+    showModal.value = true;
+    alertaMensagem.value = '';
+};
+
+const closeModal = () => {
+    showModal.value = false;
+    nomeMarca.value = '';
+    file.value = null;
+    alertaMensagem.value = '';
+};
+
+//-----------------------------------------------------------FIM----------------------------------------------------------
+
+
+
+//  --------------------------------------------------ADICIONAR MARCAS--------------------------------------------------
+const fileUpload = (event) => {
+    file.value = event.target.files[0];
+}
+
+const submitFile = async() => {
+    alertaMensagem.value = '';
+
+    const formData = new FormData();
+    formData.append('nome', nomeMarca.value);
     
-    <script setup>
-    import InputContainerComponent from './InputContainer.vue';
-    import Table from './Table.vue';
-    import Card from './Card.vue';
-    import Modal from './Modal.vue'
-    import Alert from './Alert.vue';
-    import { ref } from 'vue';
-    
-    const nomeMarca = ref('');
-    const file = ref(null);
-    const showModal = ref(false);
-
-    const openModal = () => {
-        showModal.value = true;
-    };
-
-    const closeModal = () => {
-        showModal.value = false;
-        nomeMarca.value = '';
-        file.value = null;
-    };
-
-    const fileUpload = (event) => {
-        file.value = event.target.files[0];
+    if (file.value) {
+        formData.append('imagem', file.value);
     }
 
-    const submitFile = async() => {
-        if(!file.value){
-            alert('Por favor, selecione um arquivo');
-            return;
-        }
-        const formData = new FormData();
-            formData.append('nome', nomeMarca.value)
-            formData.append('imagem', file.value);
+    try {
+        await axios.post('http://127.0.0.1:8000/api/marca', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+                'Accept': 'application/json'
+            }
+        });
+        alertaTipo.value = 'success';
+        alertaMensagem.value = 'Marca adicionada com sucesso!';
+        setTimeout(closeModal, 4000);
 
-        try{
-            const response =  await axios.post('http://127.0.0.1:8000/api/marca',formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Accept': 'application/json'
-                }
-            })
-            closeModal();
-            // Aqui você pode adicionar lógica adicional, como atualizar a lista de marcas
-        } catch (error){
-            console.error('Erro ao adicionar a marca:', error.response?.data || error.message);
-        }
+    } catch (error) {
+        alertaTipo.value = 'danger';
+        alertaMensagem.value = Object.values(error.response?.data?.errors || {}).flat();
     }
-    </script>
-    
-    <style scoped>
-    
-    </style>
+}
+//-----------------------------------------------------------FIM----------------------------------------------------------
+
+
+
+//  --------------------------------------------------LISTAR MARCAS--------------------------------------------------
+const listMarcas = async() => {
+    try {
+        const response = await axios.get('http://127.0.0.1:8000/api/marca');
+        listaMarcas.value = response.data;
+    } catch (error) {
+        console.error('Erro ao buscar marcas:', error);
+    }
+};
+
+//-----------------------------------------------------------FIM----------------------------------------------------------
+
+const excluirMarca = async (id) => {
+    try {
+        await axios.delete(`http://127.0.0.1:8000/api/marca/${id}`);
+        alertaTipoPrincipal.value = 'success';
+        alertaMensagemPrincipal.value = 'Marca excluída com sucesso!';
+        await listMarcas(); // Atualiza a lista de marcas após a exclusão
+        
+        // Limpa a mensagem após 5 segundos
+        setTimeout(() => {
+            alertaMensagemPrincipal.value = '';
+        }, 5000);
+    } catch (error) {
+        console.error('Erro ao excluir marca:', error);
+        alertaTipoPrincipal.value = 'danger';
+        alertaMensagemPrincipal.value = 'Erro ao excluir marca. Por favor, tente novamente.';
+        if (error.response) {
+            console.error('Detalhes do erro:', error.response.data);
+        }
+        
+        // Limpa a mensagem de erro após 5 segundos
+        setTimeout(() => {
+            alertaMensagemPrincipal.value = '';
+        }, 5000);
+    }
+};
+
+
+const colunas = [
+    { chave: 'id', titulo: 'ID' },
+    { chave: 'nome', titulo: 'Nome' },
+    { chave: 'imagem', titulo: 'Imagem' },
+    { chave: 'acoes', titulo: 'Ações' }
+];
+
+onMounted(listMarcas);
+
+</script>
+
+<style scoped>
+
+</style>

@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class StoreMarcaRequest extends FormRequest
 {
@@ -17,9 +19,9 @@ class StoreMarcaRequest extends FormRequest
             'nome' => [
                 'required',
                 'unique:marcas',
-                'regex:/^[a-zA-Z\s]+$/',
+
             ],
-            'imagem' => 'required|file|mimes:png',
+            'imagem' => 'required|file|mimes:png|max:2048',
         ];
     }
 
@@ -28,9 +30,19 @@ class StoreMarcaRequest extends FormRequest
         return [
             'nome.required' => 'O campo nome é obrigatório',
             'nome.unique' => 'Já existe essa marca',
-            'nome.regex' => 'O campo nome só pode conter letras e espaços',
             'imagem.required' => 'O campo imagem é obrigatório',
+            'imagem.file' => 'O campo imagem deve ser um arquivo',
             'imagem.mimes' => 'O arquivo deve ser uma imagem do tipo .png',
+            'imagem.max' => 'O tamanho máximo do arquivo é 2MB',
         ];
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json([
+            'success' => false,
+            'message' => 'Erros de validação',
+            'errors' => $validator->errors()
+        ], 422));
     }
 }

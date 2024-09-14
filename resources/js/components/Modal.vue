@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { watch } from 'vue';
+import { defineProps, defineEmits, watch } from 'vue';
 
 const props = defineProps({
   show: Boolean,
@@ -30,7 +30,7 @@ const props = defineProps({
   titulo: String
 });
 
-const emit = defineEmits(['update:show']);
+const emit = defineEmits(['update:show', 'excluirMarca']);
 
 const fecharModal = () => {
   emit('update:show', false);
