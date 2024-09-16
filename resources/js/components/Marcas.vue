@@ -46,8 +46,25 @@
                         </template>
                     </Table>
 
-                    <div class="d-flex">
-                        <button type="button" class="btn btn-primary btn-sm ms-auto" @click="openModal">Adicionar</button>
+                    <div class="row">
+                        <div class="col-10">
+                            
+                            <Paginate>
+                                <li class="page-item" :class="{ disabled: currentPage === 1 }">
+                                    <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Anterior</a>
+                                </li>
+                                <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: currentPage === page }">
+                                    <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
+                                </li>
+                                <li class="page-item" :class="{ disabled: currentPage === totalPages }">
+                                    <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Próxima</a>
+                                </li>
+                            </Paginate>
+                        </div>
+
+                        <div class="col">
+                            <button type="button" class="btn btn-primary btn-sm ms-auto" @click="openModal">Adicionar</button>
+                        </div>
                     </div>
                 </card>
                 
@@ -91,7 +108,8 @@
                         <button @click="submitFile" type="button" class="btn btn-primary">Salvar</button>
                     </template>
                 </Modal>
-<!-- --------------------------------------------------FIM-------------------------------------------------- -->                
+<!-- --------------------------------------------------FIM-------------------------------------------------- -->     
+                
             </div>
         </div>
     </div>
@@ -103,6 +121,7 @@ import Table from './Table.vue';
 import Card from './Card.vue';
 import Modal from './Modal.vue'
 import Alert from './Alert.vue';
+import Paginate from './Paginate.vue';
 import { onMounted, ref } from 'vue';
 
 
@@ -115,6 +134,9 @@ const alertaMensagem = ref('');
 
 const alertaTipoPrincipal = ref('');
 const alertaMensagemPrincipal = ref('');
+
+const currentPage = ref(1);
+const totalPages = ref(0);
 
 //  --------------------------------------------------MODAL--------------------------------------------------
 const openModal = () => {
@@ -130,8 +152,6 @@ const closeModal = () => {
 };
 
 //-----------------------------------------------------------FIM----------------------------------------------------------
-
-
 
 //  --------------------------------------------------ADICIONAR MARCAS--------------------------------------------------
 const fileUpload = (event) => {
@@ -166,13 +186,17 @@ const submitFile = async() => {
 }
 //-----------------------------------------------------------FIM----------------------------------------------------------
 
-
-
 //  --------------------------------------------------LISTAR MARCAS--------------------------------------------------
 const listMarcas = async() => {
     try {
-        const response = await axios.get('http://127.0.0.1:8000/api/marca');
-        listaMarcas.value = response.data;
+        const response = await axios.get('http://127.0.0.1:8000/api/marca', {
+            params: {
+                page: currentPage.value // Envie a página atual como parâmetro
+            }
+        });
+        listaMarcas.value = response.data.data; // Armazene os dados da marca
+        totalPages.value = response.data.last_page; // Armazene o total de páginas
+        console.log(listaMarcas);
     } catch (error) {
         console.error('Erro ao buscar marcas:', error);
     }
@@ -215,6 +239,14 @@ const colunas = [
 ];
 
 onMounted(listMarcas);
+
+// Função única para mudar de página
+const changePage = async (page) => {
+    if (page > 0 && page <= totalPages.value) {
+        currentPage.value = page;
+        await listMarcas();
+    }
+};
 
 </script>
 

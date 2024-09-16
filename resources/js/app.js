@@ -45,6 +45,9 @@ app.component('modal-component', modalComponent);
 import alertComponent from './components/Alert.vue';
 app.component('alert-component', alertComponent);
 
+import paginateComponent from './components/Paginate.vue';
+app.component('paginate-component', paginateComponent);
+
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
