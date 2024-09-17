@@ -43,8 +43,8 @@
                         </template>
                         <template #acoes="{ item }">
                             <div class="d-flex justify-content-center"> <!-- Centralizando os botões -->
-                                <button class="btn btn-primary btn-sm" @click="excluirMarca(item.id)">Visualizar</button>
-                                <button class="btn btn-info btn-sm" @click="excluirMarca(item.id)">Atualizar</button>
+                                <button class="btn btn-primary btn-sm">Visualizar</button>
+                                <button class="btn btn-info btn-sm" >Atualizar</button>
                                 <button class="btn btn-danger btn-sm" @click="excluirMarca(item.id)">Excluir</button>
                             </div>
                         </template>
