@@ -8,19 +8,19 @@
                         <div class="row g-3"> 
                             <div class="col mb-3">
                                 <input-container-component titulo="ID" id="inputId" id-help="idHelp" texto-ajuda="Opcional. Informe o ID da marca"> 
-                                    <input type="number" class="form-control" id="inputId" aria-describedby="idHelp" placeholder="ID">
+                                    <input v-model="inputID" type="number" class="form-control" id="inputId" aria-describedby="idHelp" placeholder="ID">
                                 </input-container-component>       
                             </div>                    
 
                             <div class="col mb-3">
                                 <input-container-component titulo="Nome da marca" id="inputNome" id-help="nomeHelp" texto-ajuda="Opcional. Informe o nome da marca"> 
-                                    <input type="text" class="form-control" id="inputNome" aria-describedby="nomeHelp" placeholder="Nome da marca">
+                                    <input v-model="inputMarca" type="text" class="form-control" id="inputNome" aria-describedby="nomeHelp" placeholder="Nome da marca">
                                 </input-container-component> 
                             </div>
                         </div>
 
                         <div class="d-flex">
-                            <button type="submit" class="btn btn-primary btn-sm ms-auto">Pesquisar</button>
+                            <button type="submit" class="btn btn-primary btn-sm ms-auto" @click="listMarcas">Pesquisar</button>
                         </div>
                 </Card>
 
@@ -42,7 +42,11 @@
                             <span v-else>Sem imagem</span>
                         </template>
                         <template #acoes="{ item }">
-                            <button class="btn btn-danger" @click="excluirMarca(item.id)">Excluir</button>
+                            <div class="d-flex justify-content-center"> <!-- Centralizando os botões -->
+                                <button class="btn btn-primary btn-sm" @click="excluirMarca(item.id)">Visualizar</button>
+                                <button class="btn btn-info btn-sm" @click="excluirMarca(item.id)">Atualizar</button>
+                                <button class="btn btn-danger btn-sm" @click="excluirMarca(item.id)">Excluir</button>
+                            </div>
                         </template>
                     </Table>
 
@@ -124,6 +128,8 @@ import Alert from './Alert.vue';
 import Paginate from './Paginate.vue';
 import { onMounted, ref } from 'vue';
 
+const inputID = ref('')
+const inputMarca = ref('')
 
 const listaMarcas = ref([]);
 const nomeMarca = ref('');
@@ -189,14 +195,32 @@ const submitFile = async() => {
 //  --------------------------------------------------LISTAR MARCAS--------------------------------------------------
 const listMarcas = async() => {
     try {
+        const params = {};
+
+        // Construção do filtro
+        if(inputMarca.value){
+            params.filtro = `nome:like:${inputMarca.value}%`;
+            
+            // Redefine a página atual para 1 ao fazer uma nova pesquisa
+            currentPage.value = 1;
+        }
+
+        if(inputID.value){
+            params.filtro = `id:=:${inputID.value}`
+
+            // Redefine a página atual para 1 ao fazer uma nova pesquisa
+            currentPage.value = 1;
+        }
+
         const response = await axios.get('http://127.0.0.1:8000/api/marca', {
             params: {
+                ...params,
                 page: currentPage.value // Envie a página atual como parâmetro
             }
         });
         listaMarcas.value = response.data.data; // Armazene os dados da marca
         totalPages.value = response.data.last_page; // Armazene o total de páginas
-        console.log(listaMarcas);
+
     } catch (error) {
         console.error('Erro ao buscar marcas:', error);
     }
@@ -209,14 +233,19 @@ const excluirMarca = async (id) => {
         await axios.delete(`http://127.0.0.1:8000/api/marca/${id}`);
         alertaTipoPrincipal.value = 'success';
         alertaMensagemPrincipal.value = 'Marca excluída com sucesso!';
-        await listMarcas(); // Atualiza a lista de marcas após a exclusão
+
+        inputID.value = '';
+        inputMarca.value = '';
         
+        // Chama a função para listar marcas após a exclusão
+        await listMarcas(); // Atualiza a lista de marcas após a exclusão
+        console.log('Lista de marcas atualizada após exclusão.'); // Verificação
+
         // Limpa a mensagem após 5 segundos
         setTimeout(() => {
             alertaMensagemPrincipal.value = '';
         }, 5000);
     } catch (error) {
-        console.error('Erro ao excluir marca:', error);
         alertaTipoPrincipal.value = 'danger';
         alertaMensagemPrincipal.value = 'Erro ao excluir marca. Por favor, tente novamente.';
         if (error.response) {
@@ -235,7 +264,7 @@ const colunas = [
     { chave: 'id', titulo: 'ID' },
     { chave: 'nome', titulo: 'Nome' },
     { chave: 'imagem', titulo: 'Imagem' },
-    { chave: 'acoes', titulo: 'Ações' }
+    { chave: 'acoes', titulo: '', class: 'text-center' }
 ];
 
 onMounted(listMarcas);
@@ -243,8 +272,8 @@ onMounted(listMarcas);
 // Função única para mudar de página
 const changePage = async (page) => {
     if (page > 0 && page <= totalPages.value) {
-        currentPage.value = page;
-        await listMarcas();
+        currentPage.value = page; // Atualiza a página atual
+        await listMarcas(); // Chama a função para buscar marcas da nova página
     }
 };
 

@@ -2,7 +2,7 @@
     <table class="table table-hover">
         <thead>
             <tr>
-                <th v-for="coluna in colunas" :key="coluna.chave" scope="col">{{ coluna.titulo }}</th>
+                <th v-for="coluna in colunas" :key="coluna.chave" scope="col" :class="coluna.class">{{ coluna.titulo }}</th>
             </tr>
         </thead>
         <tbody>
