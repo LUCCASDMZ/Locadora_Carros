@@ -92,8 +92,8 @@ class MarcaController extends Controller
             $imagem_urn = $imagem->store('imagens/marcas', 'public');
             $dadosValidados['imagem'] = $imagem_urn;
         } else {
-            // Se não há nova imagem, remova o campo 'imagem' dos dados validados
-            unset($dadosValidados['imagem']);
+            // Se não há nova imagem, mantenha a imagem atual
+            unset($dadosValidados['imagem']); // Remova a imagem dos dados validados
         }
 
         $marca->update($dadosValidados);

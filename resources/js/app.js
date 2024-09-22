@@ -7,6 +7,25 @@
 import './bootstrap';
 import { createApp } from 'vue';
 
+/*importando e configurando o vuex */
+import { createStore } from 'vuex'
+
+const store = createStore({
+    state: {
+        transacao: { status: '', mensagem: '' } 
+    },
+    mutations: {
+        setTransacao(state, payload) {
+            state.transacao.status = payload.status;
+            state.transacao.mensagem = payload.mensagem;
+        },
+        clearTransacao(state) {
+            state.transacao.status = '';
+            state.transacao.mensagem = '';
+        }
+    }
+});
+
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
@@ -14,6 +33,7 @@ import { createApp } from 'vue';
  */
 
 const app = createApp({});
+app.use(store); // Adiciona a store à instância do Vue
 
 import loginComponent from './components/login.vue';
 app.component('login-component', loginComponent);

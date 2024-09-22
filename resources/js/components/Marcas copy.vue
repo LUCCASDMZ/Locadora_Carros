@@ -26,11 +26,12 @@
 
 <!-- --------------------------------------------------MARCAS-------------------------------------------------- -->
 
- <!-- --------------------ALERTS GLOBAIS--------------------> 
+ <!-- --------------------ALERTS--------------------> 
                 <Alert 
-                    v-if="store.state.transacao.mensagem"
-                    :tipo="store.state.transacao.status"
-                    :mensagem="store.state.transacao.mensagem"
+                    v-if="alertaMensagemPrincipal"
+                    :tipo="alertaTipoPrincipal"
+                    :mensagem="alertaMensagemPrincipal"
+                    :duracao="5000"
                 />
 <!-- --------------------FIM----------------------->                
 
@@ -78,12 +79,13 @@
                     :titulo="modalTitulo"
                     @excluirMarca="excluirMarca"
                 >
-<!-- --------------------ALERTS NO MODAL-------------------->                
+<!-- --------------------ALERTS-------------------->                
                     <template #alertas>
                         <Alert 
-                            v-if="store.state.transacao.mensagem && modo === 'adicionar'"
-                            :tipo="store.state.transacao.status"
-                            :mensagem="store.state.transacao.mensagem"
+                            v-if="alertaMensagem"
+                            :tipo="alertaTipo"
+                            :mensagem="alertaMensagem"
+                            :duracao="5000"
                         />
                     </template>
 <!-- --------------------FIM----------------------->
@@ -136,8 +138,7 @@ import Card from './Card.vue';
 import Modal from './Modal.vue'
 import Alert from './Alert.vue';
 import Paginate from './Paginate.vue';
-import { computed, onMounted, ref, watch } from 'vue';
-import { useStore } from 'vuex'; // {{ edit_1 }}
+import { computed, onMounted, ref } from 'vue';
 
 const inputID = ref('')
 const inputMarca = ref('')
@@ -149,11 +150,14 @@ const listaMarcas = ref([]);
 const nomeMarca = ref('');
 const file = ref(null);
 const showModal = ref(false);
+const alertaTipo = ref('');
+const alertaMensagem = ref('');
+
+const alertaTipoPrincipal = ref('');
+const alertaMensagemPrincipal = ref('');
 
 const currentPage = ref(1);
 const totalPages = ref(0);
-
-const store = useStore(); // {{ edit_2 }}
 
 //  --------------------------------------------------MODAL--------------------------------------------------
 const openModal = (tipo, item = null) => {
@@ -164,12 +168,14 @@ const openModal = (tipo, item = null) => {
         marcaSelecionada.value = {}; // Limpa a seleção ao adicionar
     }
     showModal.value = true;
+    alertaMensagem.value = '';
 };
 
 const closeModal = () => {
     showModal.value = false;
     nomeMarca.value = '';
     file.value = null;
+    alertaMensagem.value = '';
 };
 
 //-----------------------------------------------------------FIM----------------------------------------------------------
@@ -178,29 +184,32 @@ const closeModal = () => {
 
 // Função para atualizar a marca
 const updateMarca = async () => {
+    alertaMensagem.value = '';
     const formData = new FormData();
     formData.append('nome', marcaSelecionada.value.nome);
     
     // Adicione a chave _method para simular o método PUT
-    formData.append('_method', 'PUT');
+    formData.append('_method', 'PUT'); // {{ edit_1 }}
 
     if (file.value) {
         formData.append('imagem', file.value);
     }
 
     try {
-        await axios.post(`http://127.0.0.1:8000/api/marca/${marcaSelecionada.value.id}`, formData, {
+        const response = await axios.post(`http://127.0.0.1:8000/api/marca/${marcaSelecionada.value.id}`, formData, { // {{ edit_2 }}
             headers: {
                 'Content-Type': 'multipart/form-data',
                 'Accept': 'application/json'
             }
         });
-        store.commit('setTransacao', { status: 'success', mensagem: 'Marca atualizada com sucesso!' });
+        alertaTipo.value = 'success';
+        alertaMensagem.value = 'Marca atualizada com sucesso!';
         setTimeout(closeModal, 4000);
         await listMarcas(); // Atualiza a lista de marcas após a atualização
     } catch (error) {
-        console.error('Erro ao atualizar marca:', error);
-        store.commit('setTransacao', { status: 'danger', mensagem: 'Erro ao atualizar marca.' });
+        console.error('Erro ao atualizar marca:', error); // Verifique o erro
+        alertaTipo.value = 'danger';
+        alertaMensagem.value = Object.values(error.response?.data?.errors || {}).flat();
     }
 };
 //-----------------------------------------------------------FIM----------------------------------------------------------
@@ -213,11 +222,15 @@ const listMarcas = async() => {
         // Construção do filtro
         if(inputMarca.value){
             params.filtro = `nome:like:${inputMarca.value}%`;
+            
+            // Redefine a página atual para 1 ao fazer uma nova pesquisa
             currentPage.value = 1;
         }
 
         if(inputID.value){
             params.filtro = `id:=:${inputID.value}`
+
+            // Redefine a página atual para 1 ao fazer uma nova pesquisa
             currentPage.value = 1;
         }
 
@@ -244,6 +257,8 @@ const fileUpload = (event) => {
 }
 
 const submitFile = async() => {
+    alertaMensagem.value = '';
+
     const formData = new FormData();
     formData.append('nome', nomeMarca.value);
     
@@ -258,10 +273,13 @@ const submitFile = async() => {
                 'Accept': 'application/json'
             }
         });
-        store.commit('setTransacao', { status: 'success', mensagem: 'Marca adicionada com sucesso!' });
-        setTimeout(closeModal, 3000);
+        alertaTipo.value = 'success';
+        alertaMensagem.value = 'Marca adicionada com sucesso!';
+        setTimeout(closeModal, 4000);
+
     } catch (error) {
-        store.commit('setTransacao', { status: 'danger', mensagem: Object.values(error.response?.data?.errors || {}).flat() });
+        alertaTipo.value = 'danger';
+        alertaMensagem.value = Object.values(error.response?.data?.errors || {}).flat();
     }
 }
 //-----------------------------------------------------------FIM----------------------------------------------------------
@@ -271,18 +289,31 @@ const submitFile = async() => {
 const excluirMarca = async (id) => {
     try {
         await axios.delete(`http://127.0.0.1:8000/api/marca/${id}`);
-        store.commit('setTransacao', { status: 'success', mensagem: 'Marca excluída com sucesso!' });
+        alertaTipoPrincipal.value = 'success';
+        alertaMensagemPrincipal.value = 'Marca excluída com sucesso!';
 
-        currentPage.value = 1; // Redefine a página atual para 1
+        inputID.value = '';
+        inputMarca.value = '';
+        
+        // Chama a função para listar marcas após a exclusão
         await listMarcas(); // Atualiza a lista de marcas após a exclusão
+        console.log('Lista de marcas atualizada após exclusão.'); // Verificação
 
-    } catch (error) {
-        store.commit('setTransacao', { status: 'danger', mensagem: 'Erro ao excluir marca. Por favor, tente novamente.' });
-
-        // Limpar a mensagem após 4 segundos
+        // Limpa a mensagem após 5 segundos
         setTimeout(() => {
-            store.commit('clearTransacao');
-        }, 4000); // 4000 milissegundos = 4 segundos
+            alertaMensagemPrincipal.value = '';
+        }, 5000);
+    } catch (error) {
+        alertaTipoPrincipal.value = 'danger';
+        alertaMensagemPrincipal.value = 'Erro ao excluir marca. Por favor, tente novamente.';
+        if (error.response) {
+            console.error('Detalhes do erro:', error.response.data);
+        }
+        
+        // Limpa a mensagem de erro após 5 segundos
+        setTimeout(() => {
+            alertaMensagemPrincipal.value = '';
+        }, 5000);
     }
 };
 
@@ -309,22 +340,6 @@ const modalTitulo = computed(() => {
     if (modo.value === 'visualizar') return 'Visualizar Marca';
     if (modo.value === 'atualizar') return 'Atualizar Marca';
     return '';
-});
-
-// Computed para a mensagem de alerta
-const showAlert = computed(() => store.state.transacao.mensagem);
-
-// Watcher para limpar a mensagem após 5 segundos
-watch(showAlert, (newValue) => {
-    if (newValue) {
-        setTimeout(() => {
-            store.commit('clearTransacao'); // Limpa a mensagem após 5 segundos
-        }, 5000);
-    }
-});
-
-onMounted(() => {
-    console.log('Mensagem de transação:', store.state.transacao.mensagem); // Verifique a mensagem
 });
 
 </script>

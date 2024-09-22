@@ -1,43 +1,19 @@
 <template>
-    <transition name="fade">
-        <div v-if="visivel" :class="['alert', `alert-${tipo}`]" role="alert">
-            <ul v-if="Array.isArray(mensagem)">
-                <li v-for="(msg, index) in mensagem" :key="index">{{ msg }}</li>
-            </ul>
-            <template v-else>{{ mensagem }}</template>
-        </div>
-    </transition>
+    <div v-if="mensagem" :class="`alert alert-${tipo}`" role="alert">
+        {{ mensagem }}
+    </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
-const props = defineProps({
-    tipo: {
-        type: String,
-        default: 'info'
-    },
-    mensagem: {
-        type: [String, Array],
-        required: true
-    },
-    duracao: {
-        type: Number,
-        default: 0
-    }
-});
+const store = useStore();
 
-const visivel = ref(false);
-
-watch(() => props.mensagem, () => {
-    visivel.value = true;
-    if (props.duracao > 0) {
-        setTimeout(() => { visivel.value = false; }, props.duracao);
-    }
-}, { immediate: true });
+const tipo = computed(() => store.state.transacao.status);
+const mensagem = computed(() => store.state.transacao.mensagem);
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.5s; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+/* Estilos para o alerta */
 </style>

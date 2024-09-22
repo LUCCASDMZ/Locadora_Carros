@@ -10,6 +10,7 @@
           <div class="modal-body">
             <slot name="alertas"></slot>
             <slot name="conteudo"></slot>
+            <slot name="visualizar"></slot> <!-- Novo slot para visualizar -->
           </div>
           <div class="modal-footer">
             <slot name="rodape"></slot>
