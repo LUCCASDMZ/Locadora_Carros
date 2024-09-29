@@ -21,12 +21,10 @@ const props = defineProps({
 });
 
 const formattedMessage = computed(() => {
-    return Array.isArray(props.mensagem) ? props.mensagem.join('\n') : props.mensagem;
+    return Array.isArray(props.mensagem) ? props.mensagem.join(' ') : props.mensagem;
 });
 </script>
 
 <style scoped>
-span {
-    white-space: pre-line; /* Respeita quebras de linha */
-}
+
 </style>

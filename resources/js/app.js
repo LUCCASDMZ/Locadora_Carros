@@ -12,12 +12,12 @@ import { createStore } from 'vuex'
 
 const store = createStore({
     state: {
-        transacao: { status: '', mensagem: '' } 
+        transacao: { status: '', mensagem: '' } // Alterado para um array
     },
     mutations: {
         setTransacao(state, payload) {
             state.transacao.status = payload.status;
-            state.transacao.mensagem = payload.mensagem;
+            state.transacao.mensagem = payload.mensagem
         },
         clearTransacao(state) {
             state.transacao.status = '';
@@ -25,6 +25,8 @@ const store = createStore({
         }
     }
 });
+
+
 
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
